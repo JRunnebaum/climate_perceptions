@@ -676,20 +676,48 @@ ggsave(plot = drink_plot, file = paste0("../figures/wellbeing/drink.png"))
 ```{r observations of change}
 #changes you have observed in the last five years?
 obs <- responses %>% 
-  select(age, ocean_temp, severe_weather, target_spp)
+  select(ability, ocean_temp, severe_weather, target_spp)
 ```
 
-#q20r1 changes in ocean temperature
+#q20r1 changes in ocean temperature 
+#Figure 2a
 ```{r change in ocean temp}
-obs$ocean_temp <- factor(obs$ocean_temp, levels = c("no_change", "increase", "decrease"))
+ocean_temp <- responses %>% 
+  select(ocean_temp) %>% 
+  gather(ocean_temp) %>% 
+  group_by(ocean_temp) %>% 
+  count(ocean_temp)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+ocean_temp
+
+
+obs <- obs %>% 
+  mutate(ocean_temp = case_when(ocean_temp == "no_change" ~ "no change",
+                                 ocean_temp == "increase" ~ "increase",
+                                 ocean_temp == "decrease" ~ "decrease"))
+
+obs$ocean_temp <- factor(obs$ocean_temp, levels = c("increase", "decrease", "no change"))
 
 oceanobs_plot <- ggplot(data = obs, aes (x=ocean_temp))+
   geom_bar(fill = "black", position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
-  xlab("Category\n")+
-  ggtitle("Observations of change in ocean temperature") 
+  xlab("Response\n")+
+  ggtitle("Changes in ocean temp") 
 
 ggsave(plot = oceanobs_plot, file = paste0("../figures/resp_sum/ocean_temp_obs.png"))
+
+oceanobs_plot_pct <- ggplot(data = obs, aes (x=ocean_temp))+
+  geom_bar(aes(y = (..count..)/sum(..count..)))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 15), axis.text.y = element_text(size = 15))+ 
+  scale_y_continuous(labels=scales::percent, limits = c(0,1)) +
+  ylab("Percent Respondents\n")+
+  xlab("Response\n")+
+  ggtitle("(a) Ocean temperature") 
+oceanobs_plot_pct
+
+ggsave(plot = oceanobs_plot_pct, width = 7, height = 5, file = paste0("../figures/vulnerability_ms_figs/figure_2a_ocean_temp_obs_pct.png"))
+
 ```
 
 #q20r2 changes in severe weather
@@ -703,19 +731,60 @@ weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
   ggtitle("Observations of change in severe weather") 
 
 ggsave(plot = weatherobs_plot, file = paste0("../figures/resp_sum/weather_obs.png"))
+
+#as percentage
+weatherobs_plot_pct <- ggplot(data = obs, aes (x=severe_weather))+
+  geom_bar(aes(y = (..count..)/sum(..count..)))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 15), axis.text.y = element_text(size = 15))+ 
+  scale_y_continuous(labels=scales::percent, limits = c(0,1)) +
+  ylab("Percent Respondents\n")+
+  xlab("Response\n")+
+  ggtitle("Observed changes in severe weather") 
+weatherobs_plot_pct
+
+ggsave(plot = weatherobs_plot_pct, width = 7, height = 5, file = paste0("../figures/vulnerability_ms_figs/weather_obs_pct.png"))
 ```
 
 #q20r3 changes in target species - I would like to see this as a proportion - 
+#Figure 2b
 ```{r target species}
-obs$target_spp <- factor(obs$target_spp, levels = c("no_change", "increase", "decrease"))
+target_spp <- responses %>% 
+  select(target_spp) %>% 
+  gather(target_spp) %>% 
+  group_by(target_spp) %>% 
+  count(target_spp)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+target_spp
+
+
+
+obs <- obs %>% 
+  mutate(target_spp = case_when(target_spp == "no_change" ~ "no change",
+                                 target_spp == "increase" ~ "increase",
+                                 target_spp == "decrease" ~ "decrease"))
+
+obs$target_spp <- factor(obs$target_spp, levels = c("increase", "decrease", "no change"))
 
 targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
   geom_bar(fill = "black", position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 16))+ ylab("Number of Respondents\n")+
-  xlab("Category\n")+
+  xlab("Response\n")+
   ggtitle("Observations of change in target species") 
 
 ggsave(plot = targetspp_plot, file = paste0("../figures/resp_sum/targetspp_obs.png"))
+
+#as percentage
+targetspp_plot_pct <- ggplot(data = obs, aes (x=target_spp))+
+  geom_bar(aes(y = (..count..)/sum(..count..)))+
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1, size = 15), axis.text.y = element_text(size = 15))+ 
+  scale_y_continuous(labels=scales::percent, limits = c(0,1)) +
+  ylab("Percent Respondents\n")+
+  xlab("Response\n")+
+  ggtitle("(b) Target species") 
+targetspp_plot_pct
+
+ggsave(plot = targetspp_plot_pct, width = 7, height = 5, file = paste0("../figures/vulnerability_ms_figs/Figure_2b_targetspp_obs_pct.png"))
 ```
 
 #observations of ocean change
@@ -744,7 +813,7 @@ weatherobs_plot <- ggplot(data = obs, aes (x=severe_weather))+
 #q20r3 changes in target species
 targetspp_plot <- ggplot(data = obs, aes (x=target_spp))+
   geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal3)+
-  scale_y_continuous(labels=scales::percent) +
+  scale_y_continuous(labels=scales::percent, limits = c(0,1)) +
   theme(axis.title.x = element_blank(), axis.title.y = element_blank(), axis.text.x = element_text(angle = 90)) +
    ggtitle("Target species")
 
@@ -754,28 +823,47 @@ ggsave(plot = obs_plot, width = 12, height = 7, file = paste0("../figures/specie
 
 ```
 ##ability to catch fish has been affected by climate change
+#Figure 2c
 ```{r ability to catch fish}
 #q21 Do you think your ability to catch fish has been affected by climate change?
 #This is an interesting plot, it doesn't appear people think that climate change has really impacted their ability to catch fish
 #does this mean they think their fishing ability is indepent of climate change?
+ability <- responses %>% 
+  select(ability) %>% 
+  gather(ability) %>% 
+  group_by(ability) %>% 
+  count(ability)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+ability
 
-belief <- responses %>% 
-  select(age, yrs_fishing, state, state_code, ability, believe, harm_me, harm_future)
-belief$ability <- factor(belief$ability, levels = c("no", "no_obs_change", "yes_neg", "yes_pos"))
 
-cc_ability_plot <- ggplot(data = belief, aes (x=ability))+
-  geom_bar(aes(y = (..count..)/sum(..count..)), fill = pal4)+
-  scale_y_continuous(labels=scales::percent) +
-  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("pct Respondents\n")+
-  xlab("Category\n")+
-  ggtitle("Climate change has affected ability to catch fish") 
+obs <- obs %>% 
+   mutate(ability = case_when(ability == "no" ~ "no",
+                                 ability == "no_obs_change" ~ "no observed change",
+                                 ability == "yes_neg" ~ "yes, negatively",
+                                 ability == "yes_pos" ~ "yes, positively"))
+
+obs$ability <- factor(obs$ability, levels = c("yes, negatively", "yes, positively", "no", "no observed change"))
+
+
+cc_ability_plot <- ggplot(data = obs, aes (x=ability))+
+  geom_bar(aes(y = (..count..)/sum(..count..)))+
+  # scale_y_continuous(labels=scales::percent, limits = c(0,1))+
+  scale_y_continuous(labels=scales::percent, limits = c(0,0.3)) +
+  theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ 
+  ylab("Percent Respondents\n")+
+  xlab("Response\n")+
+  ggtitle("(c) Ability to catch fish") 
 
 cc_ability_plot
 
-ggsave(plot = cc_ability_plot, file = paste0("../figures/resp_sum/abilitytofish.png"))
+ggsave(plot = cc_ability_plot, width = 12, height = 7, file = paste0("../figures/vulnerability_ms_figs/figure_2c_abilitytofish.png"))
 
 #q22 is an open ended question about how their ability to fish has been affected by climate change
 ```
+
+
 
 ##ability to catch fish has been affected by climate change
 ```{r ability to catch fish}
@@ -824,7 +912,14 @@ write.csv(responses, paste0("../data/NE_decoded_responses_wstate", format(Sys.ti
 
 ##Belief in climate change by State
 ```{r belief in climate change by State}
-
+believe <- responses %>% 
+  select(believe) %>% 
+  gather(believe) %>% 
+  group_by(believe) %>% 
+  count(believe)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+believe
 belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
 belief$state <- factor(belief$state, levels = c("New Jersey","New York", "Connecticut", "Rhode Island", "Massachusetts", "New Hampshire", "Maine"))
@@ -844,6 +939,14 @@ ggsave(plot = cc_belief_state_plot, file = paste0("../figures/exploration/climat
 
 ##Believe that climate change will harm them by State
 ```{r climate change harm me - state}
+harm_me <- responses %>% 
+  select(harm_me) %>% 
+  gather(harm_me) %>% 
+  group_by(harm_me) %>% 
+  count(harm_me)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+harm_me
 #Believe that climate change will harm them personally
 belief$harm_me <- factor(belief$harm_me, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
@@ -864,6 +967,14 @@ ggsave(plot = cc_harm_me_by_state_plot,width = 10, height = 7,  file = paste0(".
 
 ##Believe that climate change will harm future generations by State
 ```{r climate change harm future - state}
+harm_future <- responses %>% 
+  select(harm_future) %>% 
+  gather(harm_future) %>% 
+  group_by(harm_future) %>% 
+  count(harm_future)  %>% 
+  mutate(survey = 418) %>% 
+  mutate(prop = n/survey*100)
+harm_future
 #Believe that climate change will harm future generations
 belief$harm_future <- factor(belief$harm_future, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 
@@ -975,7 +1086,7 @@ cc_harm_future_age_pct <- ggplot(data = belief, aes(x=harm_future, fill = age))+
   scale_fill_manual(values = pal6)
 cc_harm_future_age_pct
 
-ggsave(plot = cc_harm_future_age_pct, file = paste0("../figures/exploration/cc_harm_future_age_percent.png"))
+ggsave(plot = cc_harm_future_age_pct, width = 10, height = 7, file = paste0("../figures/exploration/cc_harm_future_age_percent.png"))
 
 
 ```
@@ -985,7 +1096,7 @@ ggsave(plot = cc_harm_future_age_pct, file = paste0("../figures/exploration/cc_h
 belief$believe <- factor(belief$believe, levels = c("strongly_disagree", "somewhat_disagree", "neutral", "somewhat_agree", "strongly_agree"))
 belief$yrs_fishing <- factor(belief$yrs_fishing, levels = c("0-5", "5-15", "15-25", "25+"))
 
-
+#by count
 cc_belief_yrs_fishing_plot <- ggplot(data = belief, aes (x=believe, fill = yrs_fishing))+
   geom_bar(position = position_dodge(), stat="count")+
   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust = 1))+ ylab("Number of Respondents\n")+
@@ -1070,7 +1181,7 @@ harm_future_yrs_fishing_pct <- ggplot(data = belief, aes(x=harm_future, fill = y
   scale_fill_manual(values = pal4)
 harm_future_yrs_fishing_pct
 
-ggsave(plot = harm_future_yrs_fishing_pct, file = paste0("../figures/exploration/cc_harm_future_yrs_fishing.png"))
+ggsave(plot = harm_future_yrs_fishing_pct, width = 10, height = 7, file = paste0("../figures/exploration/cc_harm_future_yrs_fishing.png"))
 
 
 ```
@@ -1146,10 +1257,32 @@ cc_agree_concern_plot <- ggplot()+
   ggtitle(expression(atop("Top three concerns", atop(italic("agree climate change is occuring (n = 300)"), ""))))+
    theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
   scale_y_continuous(labels = scales::percent)
+cc_agree_concern_plot
 
 ggsave(plot = cc_agree_concern_plot, height = 6 , width = 12 , file = paste0("../figures/cc_agree_top_3_concern_plot.png"))
 
 ```
 
+```{r}
+top_concerns <- responses %>% 
+  select(waterfront, covid_mkt, intl_trade, new_mkt, reliable_crew, fish_reg, quota, spp_dist, climate_chng, other_concern) %>% 
+   gather(concern, response) %>% 
+    group_by(concern) %>% 
+    summarise(count = sum(response)) %>% 
+    mutate(proportion = count/418)
+
+concern_plot <- ggplot()+
+  geom_col(data = top_concerns, aes(x=concern, y = proportion))+
+  xlab("Concern\n")+
+  ylab("Proportion\n")+
+  ggtitle(expression(atop("Top three concerns")))+
+   theme(axis.text.x = element_text(angle = 45, vjust = 1, hjust=1))+
+  scale_y_continuous(labels = scales::percent)
+concern_plot
+
+ggsave(plot = concern_plot, height = 6 , width = 12 , file = paste0("../figures/top_3_concern_plot.png"))
+
+table(top_concerns)
+```
 
 
